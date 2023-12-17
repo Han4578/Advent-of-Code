@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="input" cols="100" rows="30"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector("#input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let games = input.value.split("\n")
+        let copyObj = {}
+        let gameNum = 1
+        let w = [0]
+        let total = 0
+
+        for (let game of games) {
+            copyObj[gameNum] = (copyObj[gameNum] ?? 0) + 1
+            game = game.slice(10)
+            let numbers = game.split("|")
+            let winningNumbers = numbers[0].trim().split(" ").filter(String)
+            let myNumbers = numbers[1].trim().split(" ").filter(String)
+            let wins = 0
+
+            for (const n of myNumbers) {
+                if (winningNumbers.includes(n)) wins++
+            }
+            w.push(wins)
+
+            let instances = copyObj[gameNum]
+            for (let i = 1; i <= wins; i++) {
+                copyObj[i + gameNum] = (copyObj[i + gameNum] ?? 0) + instances
+            }
+            gameNum++
+        }
+        console.log(copyObj);
+        console.log(w);
+        for (const card in copyObj) {
+            const num = copyObj[card];
+            total += num
+            
+        }
+        final.innerHTML = total
+    }
+
+    button.addEventListener("click", refresh)
+
+</script>
+</html>

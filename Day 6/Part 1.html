@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input">Time:        51     92     68     90
+        Distance:   222   2031   1126   1225</textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let lines = input.value.split("\n")
+        let times = lines[0].match(/[0-9]+/g)
+        let distance = lines[1].match(/[0-9]+/g)
+        let pairs = []
+        let mutipliedWays = 1
+        
+        for (let i = 0; i < times.length; i++) {
+            pairs.push([times[i], distance[i]])
+        }
+        
+        for (const pair of pairs) {
+            let ways = 0
+            let time = parseInt(pair[0])
+            let distance = parseInt(pair[1])
+
+            for (let t = 0; t < time; t++) {
+                if (t * (time-t) > distance) ways++
+            }
+            mutipliedWays = mutipliedWays * ways
+        }
+
+        final.innerHTML = mutipliedWays
+    }
+
+    button.addEventListener("click", refresh)
+</script>
+</html>

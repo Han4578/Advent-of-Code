@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <canvas class="canvas" style="border: 1px solid black;"></canvas>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let canvas = document.querySelector(".canvas")
+    let final = document.querySelector(".final")
+    let rows = []
+    let steps = 1
+    let n = 5
+
+    let ctx = canvas.getContext("2d")
+    
+    function refresh() {
+        rows = input.value.split("\n").map(l => {return l.trim()})
+
+        let startingRow = rows.filter(r => {return r.includes("S")})[0]
+        let startingX = startingRow.indexOf("S")
+        let startingY = rows.indexOf(startingRow)
+        let allPipes = ["|", "-", "L", "J", "7", "F"]
+        let currentPipe = 0
+        let row
+        let pipe
+        let coords = []
+        steps = 1
+        canvas.width = startingRow.length * n
+        canvas.height = startingRow.length * n
+        ctx.beginPath()
+        coords.push([startingX, startingY])
+
+        let surroundings = [
+            {
+                x : startingX + 1,
+                y : startingY,
+                position : "right"
+            },
+            {
+                x : startingX - 1,
+                y : startingY,
+                position : "left"
+            },
+            {
+                x : startingX,
+                y : startingY + 1,
+                position : "down"
+            },
+            {
+                x : startingX,
+                y : startingY - 1,
+                position : "up"
+            }
+        ]
+
+        for (const tile of surroundings) {
+            if (tile.x < 0 || tile.y < 0 || tile.x > startingRow.length - 1 || tile.y > rows.length - 1) continue
+            let row = rows[tile.y]
+            let pipe = row[tile.x]
+            switch(tile.position) {
+                case "up":
+                    if (["|", "7", "F"].includes(pipe)) currentPipe = [tile.x, tile.y, "down"]
+                    break;
+                case "down":
+                    if (["|", "L", "J"].includes(pipe)) currentPipe = [tile.x, tile.y, "up"]
+                    break;
+                case "left":
+                    if (["-", "L", "F"].includes(pipe)) currentPipe = [tile.x, tile.y, "right"]
+                    break;
+                case "right":
+                    if (["J", "7", "-"].includes(pipe)) currentPipe = [tile.x, tile.y, "left"]
+                    break;
+                    
+                default:
+                    break;
+            }
+            if (currentPipe != 0) {
+                // ctx.moveTo(tile.x * n, tile.y * n)
+                break
+            }
+        }
+        while (pipe !== "S") {
+            row = rows[currentPipe[1]]
+            pipe = row[currentPipe[0]]
+            ctx.lineTo(currentPipe[0] * n, currentPipe[1] * n)
+            coords.push([currentPipe[0], currentPipe[1]])
+            if (pipe == "S") break
+            steps++
+            switch (pipe) {
+                case "-":
+                    if (currentPipe[2] == "left") currentPipe = [currentPipe[0] + 1, currentPipe[1], "left"]
+                    else currentPipe = [currentPipe[0] - 1, currentPipe[1], "right"]
+                    break;
+                case "|":
+                    if (currentPipe[2] == "up") currentPipe = [currentPipe[0], currentPipe[1] + 1, "up"]
+                    else currentPipe = [currentPipe[0], currentPipe[1] - 1, "down"]
+                    break;
+                case "L":
+                    if (currentPipe[2] == "right") currentPipe = [currentPipe[0], currentPipe[1] - 1, "down"]
+                    else currentPipe = [currentPipe[0] + 1, currentPipe[1], "left"]
+                    break;
+                case "J":
+                    if (currentPipe[2] == "left") currentPipe = [currentPipe[0], currentPipe[1] - 1, "down"]
+                    else currentPipe = [currentPipe[0] - 1, currentPipe[1], "right"]
+                    break;
+                case "F":
+                    if (currentPipe[2] == "right") currentPipe = [currentPipe[0], currentPipe[1] + 1, "up"]
+                    else currentPipe = [currentPipe[0] + 1, currentPipe[1], "left"]
+                    break;
+                case "7":
+                    if (currentPipe[2] == "left") currentPipe = [currentPipe[0], currentPipe[1] + 1, "up"]
+                    else currentPipe = [currentPipe[0] - 1, currentPipe[1], "right"]
+                    break;
+                default:
+                    break;
+            }
+        }
+        ctx.closePath()
+        ctx.stroke()
+
+        let a = 0, b = 0
+
+        for (const [i, pipe] of coords.entries()) {
+            if (i > coords.length - 2) break
+            let nextPipe = coords[i + 1]
+            a += (pipe[0] * nextPipe[1])
+            b += (nextPipe[0] * pipe[1])
+        }
+        console.log(coords.length);
+        let area = 0.5 * Math.abs(a - b)
+        final.innerHTML = area - (coords.length - 3) / 2
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>

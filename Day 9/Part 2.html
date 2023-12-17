@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let total = 0
+
+    function refresh() {
+        let lines = input.value.split("\n").map(l => {
+            return l.trim().split(/[ +]/g).map(n => {
+                return parseInt(n)
+            })
+        })
+
+        for (const line of lines) {
+            let num = getDifference(line)
+            let interpolatedValue = line[0] - num
+            total += interpolatedValue
+        }
+
+        final.innerHTML = total
+    }
+
+    function getDifference(array) {
+        let newArray = []
+        for (const [i, num] of array.entries()) {
+            if(i == array.length - 1) break
+            let nextNum = array[i + 1]
+            let difference = nextNum - num
+            newArray.push(difference)
+        }
+        if (newArray.every(n => {return n == 0})) return 0
+
+        let interpolatedValue = getDifference(newArray)
+        console.log(newArray[0] - interpolatedValue);
+        return newArray[0] - interpolatedValue
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>

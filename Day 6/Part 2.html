@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input">Time:        51     92     68     90
+        Distance:   222   2031   1126   1225</textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let lines = input.value.split("\n")
+        let time = parseInt(lines[0].match(/[0-9]+/g).join(""))
+        let distance = parseInt(lines[1].match(/[0-9]+/g).join(""))
+        let ways = 0
+
+        for (let t = 0; t < time; t++) {
+            if (t * (time-t) > distance) ways++
+        }
+
+        final.innerHTML = ways
+    }
+
+    button.addEventListener("click", refresh)
+</script>
+</html>

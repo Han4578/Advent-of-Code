@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let sections = input.value.split(/\n *\n/gm)
+        let seeds = sections.shift().match(/[0-9]+ [0-9]+/g)
+        let locations = []
+        for (let seedPair of seeds) {
+            let pairs = [seedPair.split(" ")]
+
+            for (const section of sections) {
+                let lines = section.split("\n")
+                lines.shift()
+                let i = 0
+                
+                for (const pair of pairs) {
+                    let lowest = parseInt(pair[0])
+                    let highest = lowest + parseInt(pair[1]) - 1
+
+                    for (const line of lines) {
+                        let columns = line.trim().split(" ").map(n => {return parseInt(n)})
+                        let destination = columns[0]
+                        let source = columns[1]
+                        let range = columns[2]
+                        let maxSource = source + range - 1
+                        
+                        if (lowest > maxSource || highest < source) continue
+                        if (line.includes("0 7716722 264620169")) debugger
+
+                        if (lowest >= source && maxSource >= highest) { //source, lowest, highest, maxSource
+                            let difference = lowest - source
+                            lowest = destination + difference
+                            pairs[i] = [lowest, pair[1]]
+                            break
+                        }
+                        if (lowest >= source && maxSource < highest) { //source, lowest, maxSource, highest
+                            let difference = lowest - source
+                            let L = destination + difference
+                            pairs[i] = [L, maxSource - lowest + 1]
+
+                            let remainingRange = highest - maxSource
+                            pairs.push([maxSource + 1, remainingRange])
+                            break
+                        }
+                        if (lowest < source && maxSource >= highest) { //lowest, source, highest, maxSource
+                            let difference = highest - source
+                            let L = destination + difference
+                            pairs[i] = [L, difference + 1]
+
+                            let remainingRange = source - lowest
+                            pairs.push([lowest, remainingRange])
+                            break
+                        }
+                        if (lowest < source && maxSource < highest) { //lowest, source, maxSource, highest
+                            pairs[i] = [destination, range]
+
+                            let lowRemainingRange = source - lowest
+                            pairs.push([lowest, lowRemainingRange])
+                            
+                            let highRemainingRange = highest - maxSource
+                            pairs.push([maxSource + 1, highRemainingRange])
+                            break
+                        }
+                    }
+                    i++
+                }
+            }
+            pairs = pairs.map(p => {return p[0]})
+            pairs.sort((a, b) => {return a - b})
+
+            locations.push(pairs[0])
+        }
+
+        locations.sort((a, b) => {return a - b})
+        console.log(locations);
+        final.innerHTML = locations[1]
+    }
+
+    button.addEventListener("click", refresh)
+</script>
+</html>

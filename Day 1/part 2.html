@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea type="text" name="import" id="import"></textarea>
+    <button type="submit" class="button">submit</button>
+    <div class="final"></div>
+    <div>Your calculation isn't quite right. It looks like some of the digits are actually spelled out with letters)) { one, two, three, four, five, six, seven, eight, and nine also count as valid "digits".
+
+        Equipped with this new information, you now need to find the real first and last digit on each line. For exampl
+    }e)) {
+        
+        two1nine
+    }
+        eightwothree
+        abcone2threexyz
+        xtwone3four
+        4nineeightseven2
+        zoneight234
+        7pqrstsixteen
+        In this example, the calibration values are 29, 83, 13, 24, 42, 14, and 76. Adding these together produces 281.
+    </div>
+</body>
+<script>
+    let input = document.querySelector("#import")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    
+    
+function refresh(){
+    let no = 0
+    let array = input.value.split("\n")
+    for (const string of array) {
+        let digit1;
+        let digit2;
+        let string1 = "";
+        let string2 = "";
+        for (i = 0; i <= string.length - 1; i++) {
+            let number = string[i];
+            if (!isNaN(number)) {
+                digit1 = number;
+                break;
+            }
+
+            string1 += number
+            let hasString = false
+
+            if (string1.includes("one")){
+                digit1 = "1"
+                break;
+            } else if (string1.includes("two")) {
+                digit1 = "2"
+                break;
+            } else if (string1.includes("three")) {
+                digit1 = "3"
+                break;
+            }
+            else if (string1.includes("four")) {
+                digit1 = "4"
+                break;
+            }
+            else if (string1.includes("five")) {
+                digit1 = "5"
+                break;
+            }
+            else if (string1.includes("six")) {
+                digit1 = "6"
+                break;
+            }
+            else if (string1.includes("seven")) {
+                digit1 = "7"
+                break;
+            }
+            else if (string1.includes("eight")) {
+                digit1 = "8"
+                break;
+            }
+            else if (string1.includes("nine")) {
+                digit1 = "9"
+                break;            
+            }
+
+        }
+        
+    
+        for (i = string.length - 1; i >= 0; i--) {
+            let number = string[i];
+            if (!isNaN(number)) {
+                digit2 = number;
+                break;
+            }
+
+            string2 += number
+            let hasString = false
+
+            if (string2.includes("eno")) {
+                digit2 = "1"
+                break;
+            }
+            else if (string2.includes("owt")) {
+                digit2 = "2"
+                break;
+            }
+            else if (string2.includes("eerht")) {
+                digit2 = "3"
+                break;
+            }
+            else if (string2.includes("ruof")) {
+                digit2 = "4"
+                break;
+            }
+            else if (string2.includes("evif")) {
+                digit2 = "5"
+                break;
+            }
+            else if (string2.includes("xis")) {
+                digit2 = "6"
+                break;
+            }
+            else if (string2.includes("neves")) {
+                digit2 = "7"
+                break;
+            }
+            else if (string2.includes("thgie")) {
+                digit2 = "8"
+                break;
+            }
+            else if (string2.includes("enin")) {
+                digit2 = "9"
+                break;            
+            }
+        }
+        let number = parseFloat(digit1 + digit2);
+        if (!isNaN(number))no += number 
+        console.log(number);
+
+        final.innerHTML = no
+    }
+}
+
+    button.addEventListener("click", refresh)
+</script>
+</html>

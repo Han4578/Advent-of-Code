@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="input" cols="30" rows="10"></textarea>
+    <button class="refresh">Refresh</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector("#input")
+    let button = document.querySelector(".refresh")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let gameArray = input.value.split("\n")
+        let no = 0
+
+        for (const game of gameArray) {
+            let noGame = false
+            let id = parseInt(game.match(/Game [0-9]*/g)[0].slice(5))
+            let r
+            let g
+            let b
+
+            let red = game.match(/[0-9]* red/g)
+            if (red !== null) {
+                let numbers = red.map(b => {return parseInt(b.slice(0, -4))})
+                numbers.sort((a, b) => {return b - a})
+                r = numbers[0]
+            }
+            let green = game.match(/[0-9]* green/g)
+            if (green !== null) {
+                let numbers = green.map(b => {return parseInt(b.slice(0, -6))})
+                numbers.sort((a, b) => {return b - a})
+                g = numbers[0]
+            }
+            let blue = game.match(/[0-9]* blue/g)
+            if (blue !== null) {
+                let numbers = blue.map(b => {return parseInt(b.slice(0, -5))})
+                numbers.sort((a, b) => {return b - a})
+                b = numbers[0]
+            }
+
+            let power = r * g * b
+            no += power
+        }
+
+        final.innerHTML = no
+    }
+
+    button.addEventListener("click", refresh)
+</script>
+</html>

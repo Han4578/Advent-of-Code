@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="input" cols="100" rows="30"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector("#input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let games = input.value.split("\n")
+        let no = 0
+
+        for (let game of games) {
+            game = game.slice(10)
+            let numbers = game.split("|")
+            let winningNumbers = numbers[0].trim().split(" ").filter(String)
+            let myNumbers = numbers[1].trim().split(" ").filter(String)
+            let wins = 0
+
+            for (const n of myNumbers) {
+                if (winningNumbers.includes(n)) wins ++
+            }
+
+            if (wins > 0) no += Math.pow(2, wins - 1)
+        }
+
+        final.innerHTML = no
+    }
+
+    button.addEventListener("click", refresh)
+
+</script>
+</html>

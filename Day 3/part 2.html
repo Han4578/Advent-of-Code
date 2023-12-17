@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="input" cols="100" rows="30"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector("#input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let rows = []
+    
+    function refresh() {
+        let no = 0
+        rows = input.value.split("\n")
+
+        for (let row of rows) {
+            let gears = row.match(/\*/g)
+            if (gears == null) continue
+            for (let gear of gears) {
+                let isPart = true
+                let x = row.indexOf(gear)
+                let y = rows.indexOf(row)
+                let numArray = []
+
+                let upperLower = [
+                    {
+                        x : x,
+                        y : y + 1
+                    },
+                    {
+                        x : x,
+                        y : y - 1
+                    }
+                ]
+                
+                for (const coords of upperLower) {
+                    if (coords.x == -1 || coords.y == -1 || coords.x >= row.length || coords.y >= rows.length) continue
+
+                    let coordsRow = rows[coords.y]
+                    let grid = coordsRow[coords.x]
+
+                    if (!isNaN(grid)) {
+                        numArray.push(getFullNumber(coords.x, coords.y))
+                    } else {
+                        for (const x of [coords.x - 1, coords.x + 1]) {
+                            if (!isNaN(coordsRow[x])) {
+                                numArray.push(getFullNumber(x, coords.y))
+                            }
+                        }
+                    }
+                }
+
+                for (const x2 of [x - 1, x + 1]) {
+                    if (!isNaN(row[x2])) {
+                        numArray.push(getFullNumber(x2, y))
+                    }
+                }
+                
+
+                if (numArray.length != 2) isPart = false
+
+                row = row.replace("*", ".")
+                rows[y] = row
+                if (isPart) {
+                    no += (numArray[0] * numArray[1])
+                } 
+                 console.log(x, y, numArray);
+            }
+        }
+        final.innerHTML = no
+    }
+
+    function getFullNumber(x, y) {
+        let row = rows[y]
+        let numArray= [row[x]]
+
+        for (let i = x - 1; i >= 0; i--) {
+            let num = row[i]
+            if (!isNaN(num)) {
+                numArray.unshift(num)
+            } else break
+        }
+
+        for (let i = x + 1; i < row.length; i++) {
+            let num = row[i]
+            if (!isNaN(num)) {
+                numArray.push(num)
+            } else break
+        }
+
+        return numArray.join("")
+    }
+    button.addEventListener("click", refresh)
+
+</script>
+</html>

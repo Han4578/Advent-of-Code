@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="input" cols="100" rows="30"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector("#input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    
+    function refresh() {
+        let no = 0
+        let rows = input.value.split("\n")
+
+        for (let row of rows) {
+            let numbers = row.match(/[0-9]+/g)
+            if (numbers == null) continue
+            for (let number of numbers) {
+                let isPart = false
+
+                for (let n of number) {
+                    let i = row.indexOf(n)
+                    let s = rows.indexOf(row)
+
+                    if (isPart) {
+                        row = row.replace(n, ".")
+                        rows[s] = row
+                        continue
+                    }
+                    let surrounding = [
+                        {
+                            x : i,
+                            y : s-1
+                        },
+                        {
+                            x : i+1,
+                            y : s-1
+                        },
+                        {
+                            x : i+1,
+                            y : s
+                        },
+                        {
+                            x : i+1,
+                            y : s+1
+                        },
+                        {
+                            x : i,
+                            y : s+1
+                        },
+                        {
+                            x : i-1,
+                            y : s+1
+                        },
+                        {
+                            x : i-1,
+                            y : s
+                        },
+                        {
+                            x : i-1,
+                            y : s-1
+                        }
+                    ]
+                    
+                    for (let coords of surrounding) {
+                        if (coords.x == -1 || coords.y == -1 || coords.x >= row.length || coords.y >= rows.length) continue
+                        
+                        let y = rows[coords.y]
+                        let tile = y[coords.x]
+
+                        
+                        if (tile == "." || !isNaN(tile)) continue
+                        isPart = true
+                        break
+                    }
+                    row = row.replace(n, ".")
+                    rows[s] = row
+                }
+                if (isPart) {
+                    no += parseInt(number)
+                }
+            }
+        }
+        final.innerHTML = no
+    }
+    button.addEventListener("click", refresh)
+
+</script>
+</html>

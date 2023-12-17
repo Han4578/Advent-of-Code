@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="input" cols="30" rows="10"></textarea>
+    <button class="refresh">Refresh</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector("#input")
+    let button = document.querySelector(".refresh")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let gameArray = input.value.split("\n")
+        let no = 0
+
+        for (const game of gameArray) {
+            let sets = game.split(";")
+            let noGame = false
+            let id = parseInt(game.match(/Game [0-9]*/g)[0].slice(5))
+
+            for (const set of sets) {
+                let blue = set.match(/[0-9]* blue/g)
+                if (blue !== null) {
+                    let string = blue[0].slice(0, -5)
+                    let int = parseInt(string)
+                    if (int > 14) {
+                        noGame = true
+                        break
+                    }
+                }
+                let red = set.match(/[0-9]* red/g)
+                if (red !== null) {
+                    let string = red[0].slice(0, -4)
+                    let int = parseInt(string)
+                    if (int > 12) {
+                        noGame = true
+                        break
+                    }
+                }
+                let green = set.match(/[0-9]* green/g)
+                if (green !== null) {
+                    let string = green[0].slice(0, -6)
+                    let int = parseInt(string)
+                    if (int > 13) {
+                        noGame = true
+                        break
+                    }
+                }
+            }
+
+            if (!noGame) no += id
+            else console.log(id);
+        }
+
+        final.innerHTML = no
+    }
+
+    button.addEventListener("click", refresh)
+</script>
+</html>
