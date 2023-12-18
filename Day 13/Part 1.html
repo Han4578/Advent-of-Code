@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final" style="font-family: monospace;"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        if (input.value.length == 0) return
+        let patterns = input.value.split(/\n    *\n+/g)
+        let total = 0
+        for (const pattern of patterns) {
+            let rows = pattern.split("\n").map(r => {return r.trim()}).filter(r => {return r != ""})
+            let columns = []
+            let mirrorFound = false
+
+            for (let i = 0; i < rows[0].length; i++) {
+                columns.push(rows.map(c => {return c[i]}).join(""))
+            }
+
+            for (let i = 0; i < rows.length - 1; i++) {
+                let upperRows = rows.filter((r, j) => {return j <= i})
+                let bottomRows = rows.filter((r, j) => {return j > i})
+                let rowNum = upperRows.length
+                
+                if (upperRows.length > bottomRows.length) {
+                    upperRows = upperRows.reverse().slice(0, bottomRows.length)
+                } else if (upperRows.length < bottomRows.length) {
+                    bottomRows = bottomRows.reverse().slice(bottomRows.length - upperRows.length)
+                }
+                if (upperRows.every((r, j) => {return r == bottomRows[j]})) {
+                    mirrorFound = true
+                    total += rowNum * 100
+                    break
+                }
+            }
+            if (mirrorFound) continue
+
+            for (let i = 0; i < columns.length - 1; i++) {
+                let leftColumns = columns.filter((r, j) => {return j <= i})
+                let rightColumns = columns.filter((r, j) => {return j > i})
+                let colNum = leftColumns.length
+                
+                if (leftColumns.length > rightColumns.length) {
+                    leftColumns = leftColumns.reverse().slice(0, rightColumns.length)
+                } else if (leftColumns.length < rightColumns.length) {
+                    rightColumns = rightColumns.reverse().slice(rightColumns.length - leftColumns.length)
+                } else rightColumns.reverse()
+
+                if (leftColumns.every((r, j) => {return r == rightColumns[j]})) {
+                    total += colNum
+                    break
+                }
+            }
+        }
+        
+        final.innerHTML = total
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>
