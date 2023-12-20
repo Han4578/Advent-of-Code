@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    let cache = new Map()
+    let boxes = new Map()
+
+    function refresh() {
+        let sequences = input.value.trim().split(",")
+        let total = 0
+        
+        boxes = new Map()
+        cache = new Map()
+
+        for (const code of sequences) {
+            if (code.includes("=")) add(code.split("="), cache)
+            if (code.includes("-")) minus(code.slice(0, -1), cache)
+        }
+
+        for (const [i, box] of boxes.entries()) {
+            for (const [j, lens] of box.entries()) {
+                console.log(lens);
+                let focal = lens.split(" ")[1]
+                total += (1 + i) * (j + 1) * focal
+            }
+        }
+
+        final.innerHTML = total
+    }
+
+    function add(arr) {
+        let label = arr[0]
+        let focal = arr[1]
+        let value = 0
+        let box = []
+
+        if (cache.has(label)) value = cache.get(label)
+        else {
+            value = hash(label)
+            cache.set(label, value)
+        }
+
+        let lens = `${label} ${focal}`
+
+        if (boxes.has(value)) box = boxes.get(value)
+        else boxes.set(value, [])
+
+
+        let lensFound = false
+
+        for (const [i, l] of box.entries()) {
+            if (l.includes(label)) {
+                box[i] = lens
+                lensFound = true
+                break
+            }
+        }
+
+        if (!lensFound) box.push(lens)
+        boxes.set(value, box)
+    }
+
+    function minus (label) {
+        let value = 0
+        let box = []
+
+        if (cache.has(label)) value = cache.get(label)
+        else {
+            value = hash(label)
+            cache.set(label, value)
+        }
+
+        if (boxes.has(value)) box = boxes.get(value)
+        else boxes.set(value, [])
+
+        for (const [i, l] of box.entries()) {
+            if (l.includes(label)) {
+                box.splice(i, 1)
+                break
+            }
+        }
+
+        boxes.set(value, box)
+    }
+    
+    
+    function hash(label) {
+        let value = 0
+        for (const char of label) {
+            let ascii = char.charCodeAt(0)
+            
+            value += ascii
+            value = (value * 17) % 256
+        }
+        return value
+    }
+        
+    button.addEventListener("click", refresh)
+</script>
+</html>

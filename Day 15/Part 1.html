@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let sequences = input.value.trim().split(",")
+        let value = 0
+        let total = 0
+
+        for (const code of sequences) {
+            for (let i = 0; i < code.length; i++) {
+                hash(code[i])
+            }
+            total += value
+            value = 0
+        }
+
+        final.innerHTML = total
+
+        function hash(char) {
+            let ascii = char.charCodeAt(0)
+            
+            value += ascii
+            value = (value * 17) % 256
+        }
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>
