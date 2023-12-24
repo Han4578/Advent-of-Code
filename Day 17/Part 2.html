@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input">2413432311323
+3215453535623
+3255245654254
+3446585845452
+4546657867536
+1438598798454
+4457876987766
+3637877979653
+4654967986887
+4564679986453
+1224686865563
+2546548887735
+4322674655533</textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+    <div class="display" style="font-family: monospace;"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let display = document.querySelector(".display")
+
+    function refresh() {
+        console.time("total")
+        let rows = input.value.split("\n").map(r => {return r.trim()})
+        let pathWays = [["0,0",0, "-", 0]]
+        let next = []
+        let endX = rows[0].length - 1
+        let endY = rows.length - 1
+        let endPoint = `${endX},${endY}`
+        let state = ["0,0"]
+        let distance = new Map()
+        let n = 0
+
+        scan("0,0",0, "-", 0)
+
+        while (!pathWays.some(p => {return p[0] == endPoint})) {
+            next = next.filter(p => {return !state.includes(`${p[0]},${(p[2] == "L" || p[2] == "R")?"H":"V"}`)}) //filter out tiles that has been visited
+
+            let nextStrings =  next.map(n => {return n.join(";")})//remove duplicates
+            let nextSet = [...new Set(nextStrings)]
+            next = nextSet.map(p => {return p.split(";")}).map(p => {return [p[0], parseInt(p[1]), p[2]]})
+
+            let lowestNext = new Map()
+            for (const [coords, value, direction] of next) {
+                if (lowestNext.has(`${coords};${direction}`)) continue
+                let nums = next.filter(p => {return p[0] == coords && p[2] == direction}).map(p => {return p[1]})
+                nums.sort((a, b) => {return a - b})
+                lowestNext.set(`${coords};${direction}`, nums[0])
+            }
+            next = []
+            lowestNext.forEach((value, coordsDirection) => {
+                coordsDirection = coordsDirection.split(";")
+                let coords = coordsDirection[0]
+                let direction = coordsDirection[1]
+                next.push([coords, value, direction])
+            })
+            next.sort((a, b) => {return a[1] - b[1]}) //sort by lowest cost
+            let filteredNext = next.filter(p => {return p[1] == next[0][1]}) //get all tiles with lowest cost
+            for (let [coords, value, direction] of filteredNext) {
+                if (!pathWays.some(p => {return p[0] == coords && p[1] == value && p[2]})) pathWays.push([coords, value, direction]) //just a record, doesn't affect the algorithm
+                scan(coords, value, direction) //scan for next possible tiles and add them to the next array
+            }
+
+            state.push(...filteredNext.map(p => {return `${p[0]},${(p[2] == "L" || p[2] == "R")?"H":"V"}`})) //add all tiles with lowest cost to the visited array
+            next.splice(0,filteredNext.length) //remove all tiles with lowest cost from the next array
+            for (const [coords, value, direction] of pathWays) {
+                if (!distance.has(coords) || distance.get(coords) > value) distance.set(coords, value)
+            }
+        }
+        let end = pathWays.filter(p => {return p[0] == endPoint})[0]
+        final.innerHTML = end[1]
+        console.timeEnd("total")
+
+        function scan(coords, value, direction = "-") {
+            coords = coords.split(",")
+            let x = parseInt(coords[0])
+            let y = parseInt(coords[1])
+            for (let i = 4; i < 11; i++) {
+                let adjacentCoords = [
+                    {
+                        x: x + i,
+                        y: y
+                    },
+                    {
+                        x: x - i,
+                        y: y
+                    },
+                    {
+                        x: x,
+                        y: y + i
+                    },
+                    {
+                        x: x,
+                        y: y - i
+                    }
+                ]
+                for (const c of adjacentCoords) {
+                    if (c.x < 0 || c.y < 0 || c.x >= rows[0].length || c.y >= rows.length) continue
+                    if (((direction == "L"|| direction == "R") && c.y == y) || ((direction == "U" || direction == "D") && c.x == x)) continue
+                    let num = parseInt(rows[c.y][c.x])
+                    let joinedCoords = `${c.x},${c.y}`
+                    let d
+                    if (c.x == x + i) d = "R"
+                    if (c.x == x - i) d = "L"
+                    if (c.y == y + i) d = "D"
+                    if (c.y == y - i) d = "U"
+                    if (state.includes(`${c.x},${c.y},${(d == "L" || d == "R")?"H":"V"}`)) continue
+                    for (let J = c.x + 1; J < x; J++) {
+                        num += parseInt(rows[c.y][J])                    
+                    }
+                    for (let J = c.x - 1; J > x; J--) {
+                        num += parseInt(rows[c.y][J])                    
+                    }
+                    for (let J = c.y + 1; J < y; J++) {
+                        num += parseInt(rows[J][c.x])                    
+                    }
+                    for (let J = c.y - 1; J > y; J--) {
+                        num += parseInt(rows[J][c.x])                    
+                    }
+
+                    next.push([joinedCoords, num + value, d])
+                }
+            }
+        }
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>
