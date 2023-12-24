@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+    <div class="display" style="font-family: monospace;"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let display = document.querySelector(".display")
+
+    function refresh() {
+        let lines = input.value.split("\n").map(l => {return l.trim()})
+        let grid = [["."]]
+        let corners = []
+        let x = 0
+        let y = 0
+        let area = 0
+        let dots = 0
+        let j = 0
+
+        for (let line of lines) {
+            if(j == 20) debugger
+
+            line = line.match(/#....../g)[0].slice(1).split("")
+            let hex = line.slice(0, -1)
+            let direction = line[line.length - 1]
+            let decimal = toDecimal(hex)
+            dots += decimal
+            console.log(++j, decimal);
+            switch (direction) {
+                case "2":
+                    x -= decimal
+                    break;
+                case "0":
+                    x += decimal
+                    break;
+                case "3":
+                    y -= decimal
+                    break;
+                case "1":
+                    y += decimal
+                    break;
+                default:
+                    break;
+            }
+            corners.push([x, y])
+        }
+
+        corners.push(corners[0])
+
+        for (const [i, coords] of corners.entries()) {
+            if (i == corners.length - 1) continue
+            let nextCorner = corners[i + 1]
+            area += coords[0] * nextCorner[1] - coords[1] * nextCorner[0]
+        }
+
+        area = Math.abs(area) / 2
+
+        final.innerHTML = (area - (dots - 2) / 2) + dots
+        console.log(corners, dots);
+
+        function addRow(direction, times) {
+            for (let index = 0; index < times; index++) {
+                let array = new Array(grid[0].length).fill(".")
+                if (direction == "U")  {
+                    grid.unshift(array)
+                    for (let arr of corners) {
+                        arr[1]++
+                    }
+                }
+                else grid.push(array)
+            }
+        }
+
+        function addColumn(direction, times) {
+            for (let index = 0; index < times; index++) {
+                if (direction == "R")  
+                for (const row of grid) {
+                        row.push(".")
+                    }
+                else {
+                    for (const row of grid) {
+                        row.unshift(".")
+                    }
+                    for (let arr of corners) {
+                        arr[0]++
+                    }
+                }
+            }
+        }
+
+        function toDecimal(hex) {
+            let digits = hex.reverse()
+            let pow = 0
+            let total = 0
+            for (let n of digits) {
+                if (isNaN(n)) n = n.charCodeAt(0) - 87
+                total += Math.pow(16, pow++) * parseInt(n)
+            }
+            return total
+        }
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>
