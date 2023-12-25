@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        let sections = input.value.split(/\n *\n/g)
+        let workArray = sections[0].split("\n")
+        let ratings = sections[1].split("\n")
+        let workFlows = new Map()
+        let total = 0
+
+        for (let flow of workArray) {
+            flow = flow.split("{")
+            workFlows.set(flow[0], flow[1].slice(0, -1).split(","))
+        }
+
+        for (const rating of ratings) {
+            let x = parseInt(rating.match(/x=[0-9]+/g)[0].slice(2))
+            let m = parseInt(rating.match(/m=[0-9]+/g)[0].slice(2))
+            let a = parseInt(rating.match(/a=[0-9]+/g)[0].slice(2))
+            let s = parseInt(rating.match(/s=[0-9]+/g)[0].slice(2))
+            let current = "in"
+            let decision
+            let decisionMade = false
+
+            while (!decisionMade) {
+                let workFlow = workFlows.get(current)
+                debugger
+                for (const rule of workFlow) {
+                    if (workFlow.indexOf(rule) == workFlow.length - 1) {
+                        if (rule == "A" || rule == "R") {
+                            decisionMade = true
+                            decision = rule
+                        } else current = rule
+                        break
+                    }
+                    let arr = rule.split(":")
+                    let condition = arr[0].split(/[><]/g)
+                    let selected = 0
+                    switch (condition[0]) {
+                        case "x":
+                            selected = x
+                            break;
+                        case "m":
+                            selected = m
+                            break;
+                        case "a":
+                            selected = a
+                            break;
+                        case "s":
+                            selected = s
+                            break;
+                        default:
+                            break;
+                    }
+                    if ((rule.includes(">") && selected > parseInt(condition[1])) || rule.includes("<") && selected < parseInt(condition[1])) {
+                        if (arr[1] == "A" || arr[1] == "R") {
+                            decisionMade = true
+                            decision = arr[1]
+                        } else current = arr[1]
+                        break
+                    }
+                }
+            }
+
+            if (decisionMade) {
+                if (decision == "A") total += x + m + a + s
+            }
+        }
+
+        final.innerHTML = total
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>

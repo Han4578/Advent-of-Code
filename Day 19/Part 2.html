@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        console.time("Total time: ")
+        let workArray = input.value.split("\n").map(w => {return w.trim()})
+        let workFlows = new Map()
+        let total = 0
+        let accepted = []
+
+        for (let flow of workArray) {
+            if (flow == "" || flow[0] == "{") continue
+            flow = flow.split("{")
+            workFlows.set(flow[0], flow[1].slice(0, -1).split(","))
+        }
+
+        let x = []
+        let m = []
+        let a = []
+        let s = []
+        let params = [x, m, a, s]
+        
+        for (let i = 0; i < 4000; i++) {
+            x.push(i + 1)
+            m.push(i + 1)
+            a.push(i + 1)
+            s.push(i + 1)
+        }
+        filterParams("in", params)
+
+        final.innerHTML = total
+
+        function filterParams(key, params) {
+            let conditions = workFlows.get(key)
+
+            for (const c of conditions) {
+                if (c.includes(":")) {
+                    let arr = c.split(":")
+                    let condition = arr[0].split(/[><]/g)
+                    let i = 0
+                    let p = [...params].map(p => {return [...p]})
+                    let int = parseInt(condition[1])
+                    switch (condition[0]) {
+                        case "x":
+                            i = 0
+                            break;
+                        case "m":
+                            i = 1
+                            break;
+                        case "a":
+                            i = 2
+                            break;
+                        case "s":
+                            i = 3
+                            break;
+                        default:
+                            break;
+                    }
+                    if (arr[0].includes(">")) {
+                        p[i] = p[i].filter(n => {return n > int})
+                        params[i] = params[i].filter(n => {return n <= int})
+                    } else {
+                        p[i] = p[i].filter(n => {return n < int})
+                        params[i] = params[i].filter(n => {return n >= int})
+                    }
+                    switch (arr[1]) {
+                        case "R":
+                            break;
+                        case "A":
+                            let combos = p.map(n => {return n.length}).reduce((total, n) => {return total * n})
+                            total += combos
+                            break;
+                        default:
+                            filterParams(arr[1], p)
+                            break;
+                    }
+                } else {
+                    switch (c) {
+                        case "R":
+                            break;
+                        case "A":
+                            let combos = params.map(n => {return n.length}).reduce((total, n) => {return total * n})
+                            total += combos
+                            break;
+                        default:
+                            filterParams(c, params)
+                            break;
+                    }
+                }
+            }
+        }
+        console.timeEnd("Total time: ")
+    }
+    button.addEventListener("click", refresh)
+</script>
+</html>

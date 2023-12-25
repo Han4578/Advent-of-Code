@@ -25,7 +25,6 @@
         let y = 0
         let area = 0
         let dots = 0
-        let j = 0
 
         for (let line of lines) {
             if(j == 20) debugger
@@ -35,7 +34,6 @@
             let direction = line[line.length - 1]
             let decimal = toDecimal(hex)
             dots += decimal
-            console.log(++j, decimal);
             switch (direction) {
                 case "2":
                     x -= decimal
