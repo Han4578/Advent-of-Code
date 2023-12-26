@@ -16,9 +16,12 @@
     let final = document.querySelector(".final")
 
     function refresh() {
+        console.time("Total time: ")
+        let total = 0
 
 
-        final.innerHTML = steps
+        final.innerHTML = total
+        console.timeEnd("Total time: ")
     }
     
     button.addEventListener("click", refresh)

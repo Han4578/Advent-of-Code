@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let queue = []
+    let low = 0
+    let high = 0
+    let modules = []
+    let n = 0
+    let rxFound = false
+    let rxInputs = []
+
+    function refresh() {
+        console.time("Total time: ")
+        let total = 0
+        let lines = input.value.split("\n")
+        let times = Infinity
+
+        n = 0
+        modules = []
+        low = 0
+        high = 0
+        queue = []
+
+        for (const line of lines) {
+            if (line[0] != "%") continue
+            let pair = line.slice(1).split(" -> ")
+            let name = pair[0].trim()
+            let destination = pair[1].trim().split(", ")
+            let module = new Switch(name, destination, "%")
+            modules.push(module)
+        }
+        
+        for (const line of lines) {
+            if (line[0] != "&") continue
+            let pair = line.slice(1).split(" -> ")
+            let name = pair[0].trim()
+            let destination = pair[1].trim().split(", ")
+            let input = []
+
+
+            let module = new Conjunction(name, destination, "&")
+            modules.push(module)
+        }
+
+        let broadcaster = lines.filter(l => {return l.includes("broadcaster")})[0]
+        let rx = new Rx()
+
+        let pair = broadcaster.split(" -> ")
+        let destination = pair[1].trim().split(", ")
+        
+        broadcaster = new Broadcaster(destination)
+        modules.push(broadcaster)
+        modules.push(rx)
+
+        for (const module of modules) {
+            let destinations = []
+            for (const d of module.destination) {
+                let obj = modules.filter(m => {return m.name == d})[0]
+                destinations.push(obj)
+            }
+            module.destination = destinations
+        }
+
+        for (const module of modules) {
+            if (module.type != "&") continue
+            for (const m of modules) {
+                if (m.destination.includes(module)) module.input.set(m.name, false)
+            }
+            if (module.destination.includes(rx)) rxInputs = [...module.input.keys()]
+        }
+
+        rxInputs = rxInputs.map(key => {return modules.filter(m => {return m.name == key})[0]})
+        
+        for (let i = 0; i < times; i++) {
+            n++
+            broadcaster.run(false)
+            if (modules.every(m => {return !m.state}) || rxFound) break
+        }
+
+        let lcm = []
+        let hasChanged = true
+
+        while (hasChanged) {
+            hasChanged = false
+            if (rxInputs.every(step => {return step % 2 == 0})) {
+                lcm.push(2)
+                rxInputs = rxInputs.map(step => {return step / 2})
+                hasChanged = true
+                break
+            }
+            for (let i = 3; i < rxInputs[0]; i+=2) {
+                if (rxInputs.every(step => {return step % i == 0})) {
+                    lcm.push(i)
+                    rxInputs = rxInputs.map(step => {return step / i})
+                    hasChanged = true
+                    break
+                }
+                if (rxInputs.includes(1)) break
+            }
+        }
+        total = lcm.concat(rxInputs).reduce((total, current) => {return total * current})
+
+        console.log(low, high, times, n);
+        final.innerHTML = total
+        console.timeEnd("Total time: ")
+    }
+
+    function runQueue() {
+        while (queue.length > 0 && !rxFound) {
+            let request = queue.shift()
+            let module = request[0]
+            let pulse = request[1]
+            let from = request[2]
+            if (module == undefined) continue
+            module.run(pulse, from)
+        }
+    }
+
+    class Module {
+        constructor (name, destination, type) {
+            this.name = name
+            this.destination = destination
+            this.state = false
+            this.type = type
+        }
+    }
+
+    class Switch extends Module{
+        constructor(name, destination, type) {
+            super(name, destination, type)
+        }
+
+        run(pulse) {
+            if (pulse) return
+            this.state = !this.state
+            for (const d of this.destination) {
+                (this.state)? high++ : low++;
+                queue.push([d, this.state, this.name])
+            }
+        }
+    }
+
+    class Conjunction extends Module{
+        constructor(name, destination, type) {
+            super(name, destination, type)
+            this.input = new Map()
+        }
+        run(pulse, from) {
+            this.input.set(from, pulse)
+            let p = ![...this.input.values()].every(s => {return s})
+            this.state = ![...this.input.values()].every(s => {return !s})
+            for (const d of this.destination) {
+                (p)? high++ : low++;
+                queue.push([d, p, this.name])
+            }
+            if (rxInputs.includes(this) && p) {
+                let i = rxInputs.indexOf(this)
+                rxInputs[i] = n
+                if (rxInputs.every(n => {return !isNaN(n)})) rxFound = true
+            }
+        }
+    }
+
+    class Broadcaster extends Module{
+        constructor(destination) {
+            super("", destination, "broadcaster")
+        }
+        run() {
+            low++
+            for (const d of this.destination) {
+                low++;
+                queue.push([d, false, this.name])
+            }
+            runQueue()
+        }
+    }
+
+    class Rx extends Module{
+        constructor() {
+            super("rx", [], "rx")
+        }
+        run(pulse) {
+            if (pulse) return
+            else rxFound = true
+        }
+    }
+    button.addEventListener("click", refresh)
+</script>
+</html>
