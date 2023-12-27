@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+    <div class="display" style="font-family: monospace;"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let display = document.querySelector(".display")
+
+    function refresh() {
+        console.time("Total time: ")
+        let total = 0
+        let rows = input.value.split("\n").map(l => {return l.trim().split("")})
+        let history = []
+        let newSteps = []
+        let steps = 64
+        let n = 0
+
+        for (const [i, row] of rows.entries()) {
+            if (row.includes("S")) {
+                newSteps.push(`${row.indexOf("S")},${i}`)
+                break
+            }
+        }
+
+        for (let i = 0; i <= steps; i++) {
+            let tiles = [...newSteps].filter(c => {return !history.includes(c)})
+            newSteps = []
+            if (i % 2 == 0) n += tiles.length
+
+            if (tiles.length == 0) break
+
+            while (tiles.length > 0) {
+                let tile = tiles.shift()
+                history.push(tile)
+                scan(tile)
+            }
+        }
+
+        final.innerHTML = n
+
+
+
+        for (const c of history) {
+            let coords = c.split(",")
+            let x = parseInt(coords[0])
+            let y = parseInt(coords[1])
+
+            rows[y][x] = "O"
+        }
+
+        display.innerText = rows.map(r => {return r.join(" ")}).join("\n")
+
+        console.timeEnd("Total time: ")
+
+        function scan(coords) {
+            coords = coords.split(",")
+            let x = parseInt(coords[0])
+            let y = parseInt(coords[1])
+
+            let adjacent = [
+                {
+                    x: x + 1,
+                    y: y
+                },
+                {
+                    x: x - 1,
+                    y: y
+                },
+                {
+                    x: x,
+                    y: y + 1
+                },
+                {
+                    x: x,
+                    y: y - 1
+                }
+            ]
+
+            for (const c of adjacent) {
+                if (c.x < 0 || c.y < 0 || c.x > rows[0].length - 1 || c.y > rows.length - 1) continue
+                let tile = rows[c.y][c.x]
+                
+                if (tile != "." || history.includes(`${c.x},${c.y}`) || newSteps.includes(`${c.x},${c.y}`)) continue
+                newSteps.push(`${c.x},${c.y}`)
+            }
+        }
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>

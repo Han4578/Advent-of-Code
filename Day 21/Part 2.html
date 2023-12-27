@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+    <div class="display" style="font-family: monospace;"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let display = document.querySelector(".display")
+
+    function refresh() {
+        console.time("Total time: ")
+        let total = 0
+        let rows = input.value.split("\n").map(l => {return l.trim().split("")})
+        let history = []
+        let newSteps = []
+        let steps = 26501365
+        let horiDistance = (rows[0].length - 1) / 2
+        let odd = 0
+        let even = 0
+        let innerOdd = 0
+        let innerEven = 0
+
+        for (const [i, row] of rows.entries()) {
+            if (row.includes("S")) {
+                newSteps.push(`${row.indexOf("S")},${i}`)
+                break
+            }
+        }
+
+        for (let i = 0; i <= steps; i++) {
+            let tiles = [...newSteps].filter(c => {return !history.includes(c)})
+            newSteps = []
+            if (i % 2 == 0) even += tiles.length
+            else odd += tiles.length
+
+            if (i == horiDistance) {
+                innerEven = even
+                innerOdd = odd
+            }
+ 
+            if (tiles.length == 0) break
+
+            while (tiles.length > 0) {
+                let tile = tiles.shift()
+                history.push(tile)
+                scan(tile)
+            }
+        }
+        console.log(odd, even, history.length);
+        let n = (steps - horiDistance) / rows.length
+
+        let inside = calculateInside(n, odd, even)
+        let outside = calculateOuterTriangles(n, odd, even, innerOdd, innerEven)
+        let blackTriangles = calculateBlackTriangles(n, odd, even, innerOdd, innerEven)
+
+        // console.log(n, odd, even, innerOdd, innerEven, inside, blackSquares, whiteSquares);
+        final.innerHTML = inside  - outside + blackTriangles
+        console.timeEnd("Total time: ")
+
+        function scan(coords) {
+            coords = coords.split(",")
+            let x = parseInt(coords[0])
+            let y = parseInt(coords[1])
+
+            let adjacent = [
+                {
+                    x: x + 1,
+                    y: y
+                },
+                {
+                    x: x - 1,
+                    y: y
+                },
+                {
+                    x: x,
+                    y: y + 1
+                },
+                {
+                    x: x,
+                    y: y - 1
+                }
+            ]
+
+            for (const c of adjacent) {
+                if (c.x < 0 || c.y < 0 || c.x > rows[0].length - 1 || c.y > rows.length - 1) continue
+                let tile = rows[c.y][c.x]
+                
+                if (tile != "." || history.includes(`${c.x},${c.y}`) || newSteps.includes(`${c.x},${c.y}`)) continue
+                newSteps.push(`${c.x},${c.y}`)
+            }
+        }
+    }
+    
+
+    function calculateInside(n, odd, even) {
+        if (n % 2 == 0) return (n + 1) * (n + 1) * odd + n * n * even
+        else return (n + 1) *  (n + 1) * even + n * n * odd
+    }
+
+    function calculateBlackTriangles(n, odd, even, innerOdd, innerEven) {
+        if ((n + 1) % 2 == 0) { // inner odd outer even
+            return n * (odd - innerOdd)
+        } else { // inner even outer odd
+            return n * (even - innerEven)
+        }
+    }
+
+    function calculateOuterTriangles(n, odd, even, innerOdd, innerEven) {
+        if (n % 2 == 0) { // inner odd outer even
+            return (n + 1) * (odd - innerOdd)
+        } else { // inner even outer odd
+            return (n + 1) * (even - innerEven)
+        }
+    }
+    button.addEventListener("click", refresh)
+</script>
+</html>
