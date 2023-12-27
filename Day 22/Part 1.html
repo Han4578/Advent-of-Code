@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        console.time("Total time: ")
+        let total = []
+        let lines = input.value.split("\n").map(l => {return l.trim()})
+        let bricks = []
+
+        for (let [id, line] of lines.entries()) {
+            line = line.split("~")
+            let start = line[0].split(",").map(n => {return parseInt(n)})
+            let end = line[1].split(",").map(n => {return parseInt(n)})
+            let brick = new Map()
+            let x = []
+            let y = []
+            let z = []
+
+            for (let i = start[0]; i <= end[0]; i++) {
+                x.push(i)                
+            }
+
+            for (let i = start[1]; i <= end[1]; i++) {
+                y.push(i)                
+            }
+
+            for (let i = start[2]; i <= end[2]; i++) {
+                z.push(i)                
+            }
+
+            brick.set("x", x)
+            brick.set("y", y)
+            brick.set("z", z)
+            brick.set("supports", [])
+            brick.set("supported", [])
+            brick.set("id", id)
+            brick.set("canRemove", true)
+            bricks.push(brick)
+        }
+
+        bricks.sort((a, b) => {return a.get("z")[0] - b.get("z")[0]})
+        let hasChanged = true
+        // console.log(bricks);
+        for (const brick of bricks) {
+            let x = brick.get("x")
+            let y = brick.get("y")
+            let zs = brick.get("z")
+            let z = zs[0]
+            let multiple = null
+
+            if (x.length > 1) multiple = x
+            else x = x[0]
+            if (y.length > 1) multiple = y
+            else y = y[0]
+            while (z > 1) {
+                if (multiple == x && multiple.some(x => {return bricks.some(b => {return b != brick && b.get("x").includes(x) && b.get("y").includes(y) && b.get("z").includes(z - 1)})})) break
+                if (multiple == y && multiple.some(y => {return bricks.some(b => {return b != brick && b.get("x").includes(x) && b.get("y").includes(y) && b.get("z").includes(z - 1)})})) break
+                if (multiple == null &&  bricks.some(b => {return b != brick && b.get("x").includes(x) && b.get("y").includes(y) && b.get("z").includes(z - 1)})) break
+                z--
+            }
+            if (multiple == null) {
+                let difference = zs[0] - z
+                z = zs.map(n => {return n - difference})
+            } else z = [z]
+            brick.set("z", z)
+        }
+
+        for (const brick of bricks) {
+            let x = brick.get("x")
+            let y = brick.get("y")
+            let zs = brick.get("z")
+            let multiple = null
+            if (x.length > 1) multiple = x
+            else x = x[0]
+            if (y.length > 1) multiple = y
+            else y = y[0]
+            let z = zs[0]
+
+            let below = z - 1
+            if (below > 0) {
+                let supported = []
+                for (const b of bricks) {
+                    if (b == brick) continue
+                    if ((multiple == x && multiple.some(m => {return b.get("x").includes(m) && b.get("y").includes(y) && b.get("z").includes(below)})) ||
+                        (multiple == y && multiple.some(m => {return b.get("x").includes(x) && b.get("y").includes(m) && b.get("z").includes(below)})) ||
+                        (multiple == null && b.get("x").includes(x) && b.get("y").includes(y) && b.get("z").includes(below))
+                        ) {
+                        supported.push(b)
+                    }
+                }
+                // console.log(supported);
+                brick.set("supported", supported)
+            }
+
+            let above = zs[zs.length - 1] + 1
+
+            let supports = []
+            for (const b of bricks) {
+                if (b == brick) continue
+                if ((multiple == x && multiple.some(m => {return b.get("x").includes(m) && b.get("y").includes(y) && b.get("z").includes(above)})) ||
+                    (multiple == y && multiple.some(m => {return b.get("x").includes(x) && b.get("y").includes(m) && b.get("z").includes(above)})) ||
+                    (multiple == null && b.get("x").includes(x) && b.get("y").includes(y) && b.get("z").includes(above))
+                    ) {
+                    supports.push(b)
+                }
+            }
+            // console.log(supports);
+            brick.set("supports", supports)
+            if (brick.get("supported").length > 1) total.push(...brick.get("supported").map(b => {return b.get("id")}))
+            else {
+                for (const b of brick.get("supported")) {
+                    b.set("canRemove", false)
+                }
+            }
+            if (brick.get("supports").length == 0) total.push(brick.get("id"))
+        }
+        console.log(bricks);
+        total = [...new Set(total)]
+        let n = 0
+
+        for (const id of total) {
+            let brick = bricks.filter(b => {return b.get("id") == id})[0]
+            if (brick.get("canRemove")) n++
+        }
+        final.innerHTML = n
+        console.timeEnd("Total time: ")
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>
