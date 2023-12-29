@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        console.time("Total time: ")
+        let total = 0
+        let lines = input.value.split("\n")
+        let rocks = []
+        let possibilitiesX = []
+        let possibilitiesY = []
+        let possibilitiesZ = []
+
+        for (let [j, line] of lines.entries()) {
+            line = line.split(" @ ").map(c => {return c.split(", ").map(n => {return parseInt(n)})})
+            let properties = [
+                ["x", line[0][0]],
+                ["y", line[0][1]],
+                ["z", line[0][2]],
+                ["dx", line[1][0]],
+                ["dy", line[1][1]],
+                ["dz", line[1][2]]
+            ]
+            let rock = new Map(properties)
+            rocks.push(rock)
+        }
+
+        for (const [i, rock1] of rocks.entries()) {
+            if (i == rocks.length - 1) continue
+            for (let j = i + 1; j < rocks.length; j++) {
+                if (possibilitiesX.length == 1 && possibilitiesY.length == 1 && possibilitiesZ.length == 1) break
+                const rock2 = rocks[j];
+                if (rock1.get("dx") == rock2.get("dx") && Math.abs(rock1.get("dx")) > 100 && possibilitiesX.length != 1) {
+                    let difference = (rock1.get("x") - rock2.get("x"))
+                    let possibilities = []
+                    for (let i = -1000; i <= 1000; i++) {
+                        if (i == rock1.get("dx")) continue
+                        if (difference % (i - rock1.get("dx")) == 0) possibilities.push(i)
+                    }
+                    if (possibilitiesX.length == 0) possibilitiesX = possibilities
+                    else possibilitiesX = possibilitiesX.filter(p => {return possibilities.includes(p)})
+                }
+                if (rock1.get("dy") == rock2.get("dy") && Math.abs(rock1.get("dy")) > 100 && possibilitiesY.length != 1) {
+                    let difference = (rock1.get("y") - rock2.get("y"))
+                    let possibilities = []
+                    for (let i = -1000; i <= 1000; i++) {
+                        if (i == rock1.get("dy")) continue
+                        if (difference % (i - rock1.get("dy")) == 0) possibilities.push(i)
+                    }
+                    if (possibilitiesY.length == 0) possibilitiesY = possibilities
+                    else possibilitiesY = possibilitiesY.filter(p => {return possibilities.includes(p)})
+                }
+                if (rock1.get("dz") == rock2.get("dz") && Math.abs(rock1.get("dz")) > 100 && possibilitiesZ.length != 1) {
+                    let difference = (rock1.get("z") - rock2.get("z"))
+                    let possibilities = []
+                    for (let i = -1000; i <= 1000; i++) {
+                        if (i == rock1.get("dz")) continue
+                        if (difference % (i - rock1.get("dz")) == 0) possibilities.push(i)
+                    }
+                    if (possibilitiesZ.length == 0) possibilitiesZ = possibilities
+                    else possibilitiesZ = possibilitiesZ.filter(p => {return possibilities.includes(p)})
+                }
+            }
+            if (possibilitiesX.length == 1 && possibilitiesY.length == 1 && possibilitiesZ.length == 1) break
+        }
+        console.log(possibilitiesX, possibilitiesY, possibilitiesZ);
+        let rock1 = rocks[0]
+        let m1 = (rock1.get("dy") - possibilitiesY[0]) / (rock1.get("dx") - possibilitiesX[0])
+        let rock2 = rocks[1]
+        let m2 = (rock2.get("dy") - possibilitiesY[0]) / (rock2.get("dx") - possibilitiesX[0])
+        let c1 = rock1.get("y") - m1 * rock1.get("x")
+        let c2 = rock2.get("y") - m2 * rock2.get("x")
+        let intersectX = (c1 - c2) / (m2 - m1)
+        let intersectY = m1 * intersectX + c1
+        let t = (rock1.get("x") - intersectX) / (rock1.get("dx") - possibilitiesX[0])
+        let z = rock1.get("z") - (rock1.get("dz") - possibilitiesZ[0]) * t
+        final.innerHTML = intersectX + intersectY + z
+        console.timeEnd("Total time: ")
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>

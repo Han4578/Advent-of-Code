@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        console.time("Total time: ")
+        let rows = input.value.split("\n")
+        let start = rows[0].indexOf(".")
+        let nodes = new Map()
+        let startNode = createNode(`${start},0`)
+        let results = []
+        pathFind(`${start},1`, startNode, start, 0)
+        walk(startNode, 0)
+
+        results.sort((a, b) => {return b - a})
+        console.log(nodes);
+
+        final.innerHTML = results[0]
+        console.timeEnd("Total time: ")
+
+        function pathFind(coords, node, exceptionX, exceptionY) {
+            coords = coords.split(",")
+            let x = parseInt(coords[0])
+            let y = parseInt(coords[1])
+            let history = []
+            let isEnd = false
+            let isJunction = false
+            let n = 0
+            
+            while (true) {
+                n++
+                history.push(`${x},${y}`)
+                let nextTiles = []
+                let arrows = 0
+
+                let adjacent = [
+                    {
+                        x:x + 1,
+                        y:y
+                    },
+                    {
+                        x:x - 1,
+                        y:y
+                    },
+                    {
+                        x:x,
+                        y:y + 1
+                    },
+                    {
+                        x:x,
+                        y:y - 1
+                    }
+                ]
+
+                for (const c of adjacent) {
+                    if (history.includes(`${c.x},${c.y}`)) continue
+                    if (c.x == exceptionX && c.y == exceptionY) continue
+                    if (c.x < 0 || c.y < 0 || c.x > rows[0].length - 1 || c.y > rows.length - 1) continue
+
+                    let tile = rows[c.y][c.x]
+                    if (tile != ".") {
+                        if (tile == "#") continue
+                        if (++arrows > 1) isJunction = true
+                        if (c.x == x + 1 && tile == "<") continue
+                        if (c.x == x - 1 && tile == ">") continue
+                        if (c.y == y + 1 && tile == "^") continue
+                        if (c.y == y - 1 && tile == "v") continue
+                    }
+                    nextTiles.push(c)
+                }
+
+                if (y == rows.length - 1) {
+                        isEnd = true
+                        nextTiles = []
+                }
+
+                if ((isJunction || isEnd)) {
+                    let keepSplitting = !nodes.has(`${x},${y}`)
+                    let newNode = createNode(`${x},${y}`, new Map([[node, n]]))
+                    node.get("to").set(newNode, n)
+                    newNode.get("from").set(node, n)
+                    if (keepSplitting) {
+                        for (const tile of nextTiles) {
+                            pathFind(`${tile.x},${tile.y}`, newNode, x, y)
+                        }
+                    }
+                    break
+                }
+                x = nextTiles[0].x
+                y = nextTiles[0].y
+            }
+        }
+
+        function walk(node, value) {
+            let to = node.get("to")
+            if (to.size == 0) results.push(value)
+            for (const [n, v] of to.entries()) {
+                walk(n, value + v)
+            }
+        }
+
+        function createNode(coords, from = new Map(), to = new Map()) {
+            if (nodes.has(coords)) return nodes.get(coords)
+            let node = new Map()
+            node.set("from", from)
+            node.set("to", to)
+            nodes.set(coords, node)
+            return node
+        }
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>

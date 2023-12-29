@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+    let minimum = 200000000000000
+    let maximum = 400000000000000
+
+    function refresh() {
+        console.time("Total time: ")
+        let total = 0
+        let lines = input.value.split("\n")
+
+        for (const [j, line] of lines.entries()) {
+            if (j == lines.length - 1) break
+            for (let i = j + 1; i < lines.length; i++) {
+                const nextLine = lines[i];
+                total += findIntersect(line, nextLine)
+            }
+        }
+
+
+        final.innerHTML = total
+        console.timeEnd("Total time: ")
+    }
+
+    function findIntersect(rock1, rock2) {
+        rock1 = rock1.split(" @ ").map(c => {return c.split(", ").map(n => {return parseInt(n)})})
+        rock2 = rock2.split(" @ ").map(c => {return c.split(", ").map(n => {return parseInt(n)})})
+        let m1 = rock1[1][1] / rock1[1][0]
+        let m2 = rock2[1][1] / rock2[1][0]
+
+        if (m1 == m2) return 0
+
+        let c1 = rock1[0][1] - m1 * rock1[0][0]
+        let c2 = rock2[0][1] - m2 * rock2[0][0]
+        let intersectX = (c1 - c2) / (m2 - m1)
+        if (intersectX < minimum || intersectX > maximum) return 0
+        if ((rock1[1][0] > 0 && intersectX < rock1[0][0]) || (rock1[1][0] < 0 && intersectX > rock1[0][0])) return 0
+        if ((rock2[1][0] > 0 && intersectX < rock2[0][0]) || (rock2[1][0] < 0 && intersectX > rock2[0][0])) return 0
+        let intersectY = m1 * intersectX + c1
+        if (intersectY < minimum || intersectY > maximum) return 0
+        if ((rock1[1][1] > 0 && intersectY < rock1[0][1]) || (rock1[1][1] < 0 && intersectY > rock1[0][1])) return 0
+        if ((rock2[1][1] > 0 && intersectY < rock2[0][1]) || (rock2[1][1] < 0 && intersectY > rock2[0][1])) return 0
+        return 1
+    }
+    
+    button.addEventListener("click", refresh)
+</script>
+</html>
