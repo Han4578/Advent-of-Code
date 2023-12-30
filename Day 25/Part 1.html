@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <textarea name="" id="" cols="30" rows="10" class="input"></textarea>
+    <button class="button">Go</button>
+    <div class="final"></div>
+</body>
+<script>
+    let input = document.querySelector(".input")
+    let button = document.querySelector(".button")
+    let final = document.querySelector(".final")
+
+    function refresh() {
+        console.time("Total time: ")
+        let total = 0
+        let lines = input.value.split("\n").map(l => {return l.split(": ")})
+        let components = new Map()
+        let ratio = 0.5
+
+        for (const line of lines) {
+            let component = getComponent(line[0])
+            for (const c of line[1].split(" ")) {
+                if (!component.has(c)) {
+                    let otherComponent = getComponent(c)
+                    component.set(c, otherComponent)
+                    otherComponent.set(line[0], component)
+                }
+            }
+        }
+
+        let middle = [...components.values()][0]
+
+        let start = findFurthestPoints(middle)
+        let end = findFurthestPoints(start)
+
+        let path1 = findShortestPath(start, end)
+        let path2 = findShortestPath(start, end, path1)
+        let path3 = findShortestPath(start, end, path1.concat(path2))
+        let cutFound = false
+        
+        for (let i = Math.round(path1.length * ratio) - 1; i < path1.length - 1; i++) {
+            const component = path1[i];
+            const nextComponent = path1[i + 1]
+            let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+            let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+            removeComponent(component, nextComponent, componentName, nextComponentName)
+            
+            
+            for (let j = Math.round(path2.length * ratio) - 1; j < path2.length - 1; j++) {
+                const component = path2[j];
+                const nextComponent = path2[j + 1]
+                let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                removeComponent(component, nextComponent, componentName, nextComponentName)
+
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k < path3.length - 1; k++) {
+                    const component = path3[k];
+                    const nextComponent = path3[k + 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k > 0; k--) {
+                    if (cutFound) break
+                    const component = path3[k];
+                    const nextComponent = path3[k - 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+
+                if (cutFound) break
+                else addComponent(component, nextComponent, componentName, nextComponentName)
+            }
+            
+            for (let j = Math.round(path2.length * ratio) - 1; j > 0; j--) {
+                if (cutFound) break
+                const component = path2[j];
+                const nextComponent = path2[j + 1]
+                let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                removeComponent(component, nextComponent, componentName, nextComponentName)
+
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k < path3.length - 1; k++) {
+                    const component = path3[k];
+                    const nextComponent = path3[k + 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k > 0; k--) {
+                    if (cutFound) break
+                    const component = path3[k];
+                    const nextComponent = path3[k - 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+
+                if (cutFound) break
+                else addComponent(component, nextComponent, componentName, nextComponentName)
+            }
+            if (cutFound) break
+            else addComponent(component, nextComponent, componentName, nextComponentName)
+        }
+        
+        for (let i = Math.round(path1.length * ratio) - 1; i > 0; i--) {
+            if (cutFound) break
+            const component = path1[i];
+            const nextComponent = path1[i + 1]
+            let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+            let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+            removeComponent(component, nextComponent, componentName, nextComponentName)
+            
+            
+            for (let j = Math.round(path2.length * ratio) - 1; j < path2.length - 1; j++) {
+                const component = path2[j];
+                const nextComponent = path2[j + 1]
+                let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                removeComponent(component, nextComponent, componentName, nextComponentName)
+
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k < path3.length - 1; k++) {
+                    const component = path3[k];
+                    const nextComponent = path3[k + 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k > 0; k--) {
+                    if (cutFound) break
+                    const component = path3[k];
+                    const nextComponent = path3[k - 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+
+                if (cutFound) break
+                else addComponent(component, nextComponent, componentName, nextComponentName)
+            }
+            
+            for (let j = Math.round(path2.length * ratio) - 1; j > 0; j--) {
+                if (cutFound) break
+                const component = path2[j];
+                const nextComponent = path2[j + 1]
+                let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                removeComponent(component, nextComponent, componentName, nextComponentName)
+
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k < path3.length - 1; k++) {
+                    const component = path3[k];
+                    const nextComponent = path3[k + 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+    
+                for (let k = Math.round(path3.length * ratio) - 1; k > 0; k--) {
+                    if (cutFound) break
+                    const component = path3[k];
+                    const nextComponent = path3[k - 1]
+                    let componentName = [...components.entries()].filter(c => {return c[1] == component})[0][0]
+                    let nextComponentName = [...components.entries()].filter(c => {return c[1] == nextComponent})[0][0]
+                    removeComponent(component, nextComponent, componentName, nextComponentName)
+
+                    let path = findShortestPath(start, end)
+                    if (path.length == 0) {
+                        cutFound = true
+                        break
+                    } else addComponent(component, nextComponent, componentName, nextComponentName)
+                }
+
+                if (cutFound) break
+                else addComponent(component, nextComponent, componentName, nextComponentName)
+            }
+            if (cutFound) break
+            else addComponent(component, nextComponent, componentName, nextComponentName)
+        }
+
+        let G1 = getGroup(start)
+        let G2 = getGroup(end)
+        final.innerHTML = G1.size * G2.size
+        console.timeEnd("Total time: ")
+
+        function getComponent(name) {
+            if (components.has(name)) return components.get(name)
+            let component = new Map()
+            components.set(name, component)
+            return component
+        }
+        
+        function removeComponent(component, nextComponent, componentName, nextComponentName) {
+            component.delete(nextComponentName)
+            nextComponent.delete(componentName)
+        }
+
+        function addComponent(component, nextComponent, componentName, nextComponentName) {
+            component.set(nextComponentName, nextComponent)
+            nextComponent.set(componentName, component)
+        }
+    }
+    
+    function findFurthestPoints(component) {
+        let history = []
+        let nextSteps = [component]
+        let end
+        while (nextSteps.length > 0) {
+            let arr = [...nextSteps]
+            nextSteps = []
+            while (arr.length > 0) {
+                let c = arr.shift()
+                history.push(c)
+                for (const next of c.values()) {
+                    if (history.includes(next)) continue
+                    nextSteps.push(next)
+                }
+            }
+            if (nextSteps.length > 0) end = nextSteps[0]
+        }
+        return end
+    }
+    
+    function getGroup(component) {
+        let history = new Set()
+        let nextSteps = [component]
+        let end
+        while (nextSteps.length > 0) {
+            let arr = [...nextSteps]
+            nextSteps = []
+            while (arr.length > 0) {
+                let c = arr.shift()
+                history.add(c)
+                for (const next of c.values()) {
+                    if (history.has(next)) continue
+                    nextSteps.push(next)
+                }
+            }
+        }
+        return history
+    }
+
+    function findShortestPath(start, end, h = []) {
+        let history = [...h]
+        let paths = [[start]]
+        let endFound = false
+        let endPath = []
+
+        while (paths.length > 0 && !endFound) {
+            let path = paths.shift()
+            let component = path[path.length - 1]
+            let nextSteps = [...component.values()].filter(c => {return c == end || (!history.includes(c) && !path.includes(c))})
+            for (const next of nextSteps) {
+                if (next == end) {
+                    endPath = path.concat([next])
+                    endFound = true
+                    break
+                }
+                history.push(next)
+                paths.push(path.concat([next]))
+            }
+        }
+        return endPath
+    }
+    button.addEventListener("click", refresh)
+</script>
+</html>
