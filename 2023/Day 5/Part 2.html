@@ -6,7 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-    <textarea name="" id="" cols="30" rows="10" class="input">seeds: 3429320627 235304036 1147330745 114559245 1684000747 468955901 677937579 96599505 1436970021 26560102 3886049334 159534901 936845926 25265009 3247146679 95841652 3696363517 45808572 2319065313 125950148
+    <textarea name="" id="" cols="30" rows="10" class="input">seeds: 3429320627 235304036
 
         seed-to-soil map:
         583826644 2288418886 120919689
@@ -223,6 +223,7 @@
                     let highest = lowest + parseInt(pair[1]) - 1
 
                     for (const line of lines) {
+                        console.log(pair.toString());
                         let columns = line.trim().split(" ").map(n => {return parseInt(n)})
                         let [destination, source, range] = columns
                         let maxSource = source + range - 1
@@ -258,6 +259,7 @@
                     }
                     i++
                 }
+                console.log("next");
             }
             pairs = pairs.map(p => {return p[0]})
             pairs.sort((a, b) => {return a - b})
